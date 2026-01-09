@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>INFINITY MATH | Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+:root{
+    --bg: linear-gradient(135deg,#3a1c0f,#6b3e26,#8b5a2b);
+    --card: linear-gradient(145deg,#fffaf5,#ead8c6);
+    --primary:#5a2d0c;
+    --accent:#a47148;
+    --text:#3a1c0f;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--text);
+}
+
+/* ================= NAVBAR ================= */
+/* NAVBAR JUDUL SAJA */
+nav{
+    background:linear-gradient(135deg,#4b2412,#7a4a2c);
+    padding:25px 0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+/* ISI JUDUL */
+.nav-title{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+/* ICON */
+.nav-title i{
+    font-size:42px;
+    color:#f4d6b4;
+}
+
+/* TEKS JUDUL */
+.nav-title span{
+    font-size:36px;
+    font-weight:800;
+    letter-spacing:4px;
+    color:#f4d6b4;
+}
+.nav-title span{
+    font-size:36px;
+    font-weight:800;
+    letter-spacing:4px;
+    color:#f4d6b4;
+
+    text-shadow:
+        1px 1px 0 #8b5a2b,
+        2px 2px 0 #7a4a2c,
+        3px 3px 0 #5a2d0c,
+        4px 4px 10px rgba(0,0,0,.6);
+}
+.nav-title i{
+    text-shadow:0 0 20px rgba(244,214,180,.6);
+}
+
+
+
+/* ================= HERO ================= */
+.hero{
+    display:flex;
+    justify-content:center;
+    padding:80px 20px;
+}
+
+.hero-card{
+    background:var(--card);
+    max-width:1200px;
+    width:100%;
+    border-radius:40px;
+    padding:70px;
+    display:grid;
+    grid-template-columns:1.3fr 1fr;
+    gap:40px;
+    box-shadow:25px 25px 60px rgba(0,0,0,.4);
+}
+
+.hero-text h1{
+    font-size:46px;
+    margin-bottom:20px;
+}
+
+.hero-text span{
+    color:var(--accent);
+}
+
+.hero-text p{
+    font-size:16px;
+    line-height:1.8;
+    opacity:.9;
+    margin-bottom:30px;
+}
+
+.hero-text a{
+    display:inline-block;
+    padding:16px 36px;
+    background:linear-gradient(135deg,#8b5a2b,#c18b5a);
+    color:#fff;
+    text-decoration:none;
+    border-radius:40px;
+    font-weight:600;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);
+    transition:.4s;
+}
+
+.hero-text a:hover{
+    transform:translateY(-5px);
+}
+
+.hero-icon{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.hero-icon i{
+    font-size:180px;
+    color:var(--primary);
+    opacity:.9;
+}
+
+/* ================= MENU ================= */
+.container{
+    padding:0 20px 80px;
+}
+
+.menu-grid{
+    max-width:1100px;
+    margin:auto;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:35px;
+}
+
+.menu-card{
+    background:var(--card);
+    border-radius:30px;
+    padding:40px 25px;
+    text-align:center;
+    text-decoration:none;
+    color:var(--text);
+    box-shadow:
+        18px 18px 40px rgba(0,0,0,.35),
+        -10px -10px 25px rgba(255,255,255,.6);
+    transition:.4s;
+}
+
+.menu-card:hover{
+    transform:translateY(-12px);
+}
+
+.menu-card i{
+    font-size:55px;
+    color:var(--primary);
+    margin-bottom:15px;
+}
+
+.menu-card h2{
+    font-size:22px;
+    margin-bottom:10px;
+}
+
+.menu-card p{
+    font-size:14px;
+    opacity:.85;
+}
+
+.contact{
+    background:linear-gradient(145deg,#f7efe7,#e2c7a8);
+}
+
+.contact i{
+    color:#1c6b4f;
+}
+
+/* ================= FOOTER ================= */
+footer{
+    text-align:center;
+    padding:25px;
+    color:#f3e3d3;
+    font-size:14px;
+    font-weight:600;
+}
+
+/* ================= RESPONSIVE ================= */
+@media(max-width:900px){
+    .hero-card{
+        grid-template-columns:1fr;
+        text-align:center;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav>
+    <div class="nav-title">
+        <i class="fa-solid fa-infinity"></i>
+        <span>INFINITY MATH</span>
+    </div>
+</nav>
+
+
+
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-card">
+        <div class="hero-text">
+            <h1>Kelola Data dengan <span>InfinityMath</span></h1>
+            <p>
+                Platform modern untuk mengelola data mahasiswa secara cepat,
+                rapi, dan profesional. Cocok untuk pembelajaran dan administrasi.
+            </p>
+            <a href="mahasiswa.php">→ Masuk Data Mahasiswa</a>
+        </div>
+        <div class="hero-icon">
+            <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+    </div>
+</section>
+
+<!-- MENU -->
+<div class="container">
+    <div class="menu-grid">
+
+        <a href="mahasiswa.php" class="menu-card">
+            <i class="fa-solid fa-user-graduate"></i>
+            <h2>Data Mahasiswa</h2>
+            <p>Kelola data mahasiswa secara lengkap</p>
+        </a>
+
+        <a href="rekap.php" class="menu-card">
+            <i class="fa-solid fa-chart-column"></i>
+            <h2>Rekap Data</h2>
+            <p>Rekap jumlah mahasiswa per prodi</p>
+        </a>
+
+        <a href="about.php" class="menu-card">
+            <i class="fa-solid fa-circle-info"></i>
+            <h2>Tentang Aplikasi</h2>
+            <p>Informasi sistem INFINITY MATH</p>
+        </a>
+
+        <a href="contact.php" class="menu-card">
+           <i class="fa-solid fa-headset icon"></i>
+            <h2>Contact Person</h2>
+            <p>Hubungi admin via WhatsApp dan Email</p>
+        </a>
+
+    </div>
+</div>
+
+<footer>
+© 2026 | INFINITY MATH • Created with ❤
+</footer>
+
+</body>
+</html>
