@@ -1,0 +1,514 @@
+<?php
+// KONEKSI DATABASE
+$koneksi = mysqli_connect("localhost", "root", "", "webmtk");
+if (!$koneksi) {
+    die("Koneksi gagal: " . mysqli_connect_error());
+}
+
+/* ================== MODE ================== */
+$mode = $_GET['mode'] ?? 'read';
+$data_mahasiswa = null;
+
+/* ================== DELETE ================== */
+if ($mode == 'delete' && isset($_GET['nim'])) {
+    $nim = mysqli_real_escape_string($koneksi, $_GET['nim']);
+    mysqli_query($koneksi, "DELETE FROM mahasiswa WHERE nim='$nim'");
+    header("Location: mahasiswa.php?hapus=berhasil");
+    exit;
+}
+
+/* ================== CREATE ================== */
+if ($_SERVER["REQUEST_METHOD"] == "POST" && $mode == 'add') {
+    $nama = mysqli_real_escape_string($koneksi, $_POST['nama']);
+    $nim = mysqli_real_escape_string($koneksi, $_POST['nim']);
+    $prodi = mysqli_real_escape_string($koneksi, $_POST['prodi']);
+    $no_hp = mysqli_real_escape_string($koneksi, $_POST['no_hp']);
+
+    // FOTO
+    $foto = $_FILES['foto']['name'];
+    $tmp  = $_FILES['foto']['tmp_name'];
+    $folder = "foto_mahasiswa/";
+
+    if (!is_dir($folder)) {
+        mkdir($folder, 0777, true);
+    }
+
+    $nama_foto = time().'_'.$foto;
+    move_uploaded_file($tmp, $folder.$nama_foto);
+
+    mysqli_query($koneksi, "
+        INSERT INTO mahasiswa (nama, nim, prodi, nohp, foto)
+        VALUES ('$nama','$nim','$prodi','$no_hp','$nama_foto')
+    ");
+
+    header("Location: mahasiswa.php?tambah=berhasil");
+    exit;
+}
+
+
+/* ================== EDIT AMBIL DATA ================== */
+if ($mode == 'edit' && isset($_GET['nim'])) {
+    $nim = $_GET['nim'];
+    $query = mysqli_query($koneksi, "SELECT * FROM mahasiswa WHERE nim='$nim'");
+    $data_mahasiswa = mysqli_fetch_assoc($query);
+}
+
+
+/* ================== UPDATE ================== */
+if ($_SERVER["REQUEST_METHOD"] == "POST" && $mode == 'edit_submit') {
+    $nama = mysqli_real_escape_string($koneksi, $_POST['nama']);
+    $nim = mysqli_real_escape_string($koneksi, $_POST['nim']);
+    $prodi = mysqli_real_escape_string($koneksi, $_POST['prodi']);
+    $no_hp = mysqli_real_escape_string($koneksi, $_POST['no_hp']);
+    $nim_lama = mysqli_real_escape_string($koneksi, $_POST['nim_lama']);
+
+    $foto_lama = $_POST['foto_lama'];
+    $folder = "foto_mahasiswa/";
+
+    // CEK APAKAH UPLOAD FOTO BARU
+    if (!empty($_FILES['foto']['name'])) {
+        $foto_baru = time().'_'.$_FILES['foto']['name'];
+        move_uploaded_file($_FILES['foto']['tmp_name'], $folder.$foto_baru);
+
+        // HAPUS FOTO LAMA
+        if ($foto_lama && file_exists($folder.$foto_lama)) {
+            unlink($folder.$foto_lama);
+        }
+
+        $foto = $foto_baru;
+    } else {
+        $foto = $foto_lama;
+    }
+
+    mysqli_query($koneksi, "UPDATE mahasiswa SET
+        nama='$nama',
+        nim='$nim',
+        prodi='$prodi',
+        nohp='$no_hp',
+        foto='$foto'
+        WHERE nim='$nim_lama'
+    ");
+
+    header("Location: mahasiswa.php?edit=berhasil");
+    exit;
+}
+
+
+/* ================== SEARCH ================== */
+$search_query = '';
+$is_search = false;
+
+if (isset($_GET['cari'])) {
+    $is_search = true;
+    $search_query = mysqli_real_escape_string($koneksi, $_GET['cari']);
+    $result = mysqli_query($koneksi, "SELECT * FROM mahasiswa WHERE 
+        nama LIKE '%$search_query%' OR
+        nim LIKE '%$search_query%' OR
+        prodi LIKE '%$search_query%'
+        ORDER BY nim");
+} else {
+    $result = mysqli_query($koneksi, "SELECT * FROM mahasiswa ORDER BY nim");
+}
+
+$total_mahasiswa = mysqli_num_rows($result);
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Infinity Math | Data Mahasiswa</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+.back-bottom{
+    display:block;
+    text-align:center;
+    margin-top:18px;
+    background:#aaa;
+    color:#fff;
+}
+
+.back-bottom:hover{
+    background:#888;
+}
+
+.judul-form{
+    text-align:center;
+    font-size:28px;
+    font-weight:700;
+    margin-bottom:20px;
+    color:#6b3e1e;
+}
+
+.form-nav{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.header-rekap{
+    width:100%;
+    text-align:center;
+    margin-bottom:35px;
+}
+
+.judul-3d{
+    font-size:46px;
+    font-weight:800;
+    letter-spacing:4px;
+    color:#fff;
+    display:inline-block;
+    text-shadow:
+        0 2px 0 #e6d5c3,
+        0 4px 0 #d6bfa8,
+        0 8px 15px rgba(0,0,0,.4);
+}
+
+.judul-3d i{
+    margin-right:12px;
+    color:#ffdfb0;
+}
+
+.judul-3d span{
+    color:#ffe9c9;
+}
+
+.subjudul{
+    color:#f3e6d9;
+    margin-top:6px;
+    letter-spacing:2px;
+    font-size:14px;
+}
+
+.header-rekap h1{
+    font-size:44px;
+    letter-spacing:4px;
+    font-weight:700;
+    position:relative;
+    text-shadow:
+        0 2px 0 #5a2e1b,
+        0 4px 0 #4b2416,
+        0 8px 18px rgba(0,0,0,.6);
+}
+
+.header-rekap h1 i{
+    margin-right:10px;
+    color:#fff2e6;
+    text-shadow:
+        0 2px 0 #5a2e1b,
+        0 6px 12px rgba(0,0,0,.6);
+}
+
+.card-rekap{
+    position:relative;
+    z-index:1;
+    box-shadow:0 25px 45px rgba(0,0,0,.35);
+}
+
+.card-rekap::before{
+    content:'';
+    position:absolute;
+    inset:-12px;
+    background:linear-gradient(135deg,#ffffff,#f1e4d8);
+    border-radius:45px;
+    z-index:-1;
+    filter:blur(10px);
+    opacity:.95;
+}
+
+body{
+    margin:0;
+    font-family:'Poppins',sans-serif;
+    min-height:100vh;
+    background:linear-gradient(135deg,#3b1f12,#7a4a2d,#a26a3d);
+    display:flex;
+    justify-content:center;
+    padding:40px 20px;
+}
+
+.bg-wrapper{width:100%}
+
+.header-rekap{
+    text-align:center;
+    color:#fff;
+    margin-bottom:35px;
+}
+.header-rekap h1{
+    font-size:42px;
+    letter-spacing:3px;
+}
+.header-rekap p{opacity:.9}
+
+.card-rekap{
+    max-width:1100px;
+    margin:auto;
+    background:#f9f2ea;
+    border-radius:35px;
+    padding:40px;
+    box-shadow:0 20px 40px rgba(0,0,0,.3);
+}
+
+.tambah-btn,.back-btn{
+    background:#6b3e1e;
+    color:#fff;
+    padding:12px 26px;
+    border-radius:30px;
+    text-decoration:none;
+    font-weight:600;
+    margin:6px 4px;
+    display:inline-block;
+}
+
+form{
+    max-width:520px;
+    margin:25px auto;
+}
+
+form input[type="text"],
+form input[type="submit"]{
+    width:100% !important;
+    box-sizing:border-box;
+    padding:13px !important;
+    border-radius:22px;
+    font-size:14px;
+    font-family:'Poppins',sans-serif;
+}
+
+form input[type="text"]{
+    border:2px solid #c8a28a;
+    margin-bottom:14px;
+}
+
+form input[type="submit"]{
+    border:none;
+    background:#6b3e1e;
+    color:#fff;
+    font-weight:600;
+    cursor:pointer;
+}
+
+
+table{
+    width:100%;
+    background:#fff;
+    border-radius:25px;
+    overflow:hidden;
+    margin-top:25px;
+}
+th{
+    background:#6b3e1e;
+    color:#fff;
+    padding:16px;
+}
+td{
+    padding:16px;
+    text-align:center;
+}
+tr:nth-child(even){background:#efe3da}
+
+.action-btn{
+    padding:8px 18px;
+    border-radius:25px;
+    color:#fff;
+    text-decoration:none;
+}
+.edit-btn{background:#5a3b2e}
+.delete-btn{background:#8d2e1e}
+
+form{
+    max-width:520px;
+    margin:30px auto;
+    background:#fff;
+    padding:35px;
+    border-radius:30px;
+}
+form input[type=text]{
+    width:100%;
+    padding:14px;
+    margin-bottom:18px;
+    border-radius:15px;
+    border:2px solid #c8a28a;
+}
+form input[type=submit]{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:25px;
+    background:#6b3e1e;
+    color:#fff;
+    font-weight:600;
+}
+.nav-bawah-kiri{
+    margin-top:20px;
+    text-align:left;
+}
+
+</style>
+
+
+</head>
+
+<body>
+    
+<div class="bg-wrapper">
+
+<div class="header-rekap">
+    <h1>INFINITY MATH</h1>
+    <p>Data Mahasiswa</p>
+</div>
+
+<div class="card-rekap">
+
+<?php if(isset($_GET['tambah'])): ?>
+<script>Swal.fire('Berhasil','Data berhasil ditambahkan','success');</script>
+<?php endif; ?>
+<?php if(isset($_GET['edit'])): ?>
+<script>Swal.fire('Berhasil','Data berhasil diperbarui','success');</script>
+<?php endif; ?>
+<?php if(isset($_GET['hapus'])): ?>
+<script>Swal.fire('Berhasil','Data berhasil dihapus','success');</script>
+<?php endif; ?>
+
+<?php if($mode=='add'): ?>
+
+<h2 class="judul-form">Tambah Mahasiswa</h2>
+
+<form method="post" action="?mode=add" enctype="multipart/form-data">
+    <input type="text" name="nama" placeholder="Nama" required>
+    <input type="text" name="nim" placeholder="NIM" required>
+    <input type="text" name="prodi" placeholder="Program Studi" required>
+    <input type="text" name="no_hp" placeholder="No HP" required>
+    <input type="file" name="foto" accept="image/*" required>
+    <input type="submit" value="Simpan">
+</form>
+
+<!-- TOMBOL KEMBALI DI LUAR FORM -->
+<div class="nav-bawah-kiri">
+    <a href="mahasiswa.php" class="back-btn">
+        ← Kembali ke Data Mahasiswa
+    </a>
+</div>
+
+
+<?php elseif($mode=='edit' && $data_mahasiswa): ?>
+
+<h2 class="judul-form">Edit Mahasiswa</h2>
+
+<form method="post" action="?mode=edit_submit" enctype="multipart/form-data">
+    <!-- FOTO SAAT INI (DI ATAS) -->
+<?php if (!empty($data_mahasiswa['foto'])) { ?>
+    <div style="text-align:center; margin-bottom:20px;">
+        <img src="foto_mahasiswa/<?php echo $data_mahasiswa['foto']; ?>"
+             width="140"
+             height="140"
+             style="
+                border-radius:50%;
+                object-fit:cover;
+                border:3px solid #c49a6c;
+                box-shadow:0 4px 10px rgba(0,0,0,0.2);
+             ">
+        <p style="font-size:13px; color:#888;">Foto saat ini</p>
+    </div>
+<?php } else { ?>
+    <p style="text-align:center; color:#888;">Belum ada foto</p>
+<?php } ?>
+ <!-- INPUT FOTO BARU -->
+    <input type="file" name="foto" accept="image/*">
+
+
+    <input type="hidden" name="nim_lama" value="<?= $data_mahasiswa['nim'] ?>">
+    <input type="hidden" name="foto_lama" value="<?= $data_mahasiswa['foto'] ?>">
+
+    <input type="text" name="nama" value="<?= $data_mahasiswa['nama'] ?>" required>
+    <input type="text" name="nim" value="<?= $data_mahasiswa['nim'] ?>" required>
+    <input type="text" name="prodi" value="<?= $data_mahasiswa['prodi'] ?>" required>
+    <input type="text" name="no_hp" value="<?= $data_mahasiswa['nohp'] ?>" required>
+
+    <input type="submit" value="Update">
+
+</form>
+
+
+<!-- TOMBOL KEMBALI DI LUAR FORM -->
+<div class="nav-bawah-kiri">
+    <a href="mahasiswa.php" class="back-btn">
+        ← Kembali ke Data Mahasiswa
+    </a>
+</div>
+
+<?php else: ?>
+
+<a href="index.html" class="back-btn"><i class="fas fa-home"></i> Kembali ke Beranda</a>
+<a href="?mode=add" class="tambah-btn"><i class="fas fa-plus"></i> Tambah Data</a>
+
+<form method="get" class="search-form">
+    <input type="text" name="cari" value="<?= htmlspecialchars($search_query) ?>" placeholder="Cari Nama, NIM, Prodi">
+    <input type="submit" value="Cari">
+</form>
+
+<?php if($is_search): ?>
+<a href="mahasiswa.php" class="back-btn">← Kembali ke Data Mahasiswa</a>
+<?php endif; ?>
+
+<table>
+<tr>
+    <th>No</th>
+    <th>Nama</th>
+    <th>NIM</th>
+    <th>Prodi</th>
+    <th>No HP</th>
+    <th>Foto</th>
+    <th>Aksi</th>
+</tr>
+
+<?php $no=1; while($row=mysqli_fetch_assoc($result)): ?>
+<tr>
+    <td><?= $no++ ?></td>
+
+    <td><?= $row['nama'] ?></td>
+    <td><?= $row['nim'] ?></td>
+    <td><?= $row['prodi'] ?></td>
+    <td><?= $row['nohp'] ?></td>
+     <!-- FOTO DI SINI -->
+    <td>
+        <img src="foto_mahasiswa/<?= $row['foto'] ?>"
+             width="55" height="55"
+             style="border-radius:50%; object-fit:cover;">
+    </td>
+
+    <td>
+        <a class="action-btn edit-btn" href="?mode=edit&nim=<?= $row['nim'] ?>">Edit</a>
+        <a class="action-btn delete-btn" href="#" onclick="hapusData('<?= $row['nim'] ?>')">Hapus</a>
+    </td>
+</tr>
+<?php endwhile; ?>
+
+</table>
+
+<?php endif; ?>
+
+</div>
+</div>
+
+<script>
+function hapusData(nim){
+    Swal.fire({
+        title:'Yakin hapus data?',
+        text:'Data akan dihapus permanen',
+        icon:'warning',
+        showCancelButton:true,
+        confirmButtonText:'Ya, hapus',
+        cancelButtonText:'Batal'
+    }).then((result)=>{
+        if(result.isConfirmed){
+            window.location='?mode=delete&nim='+nim;
+        }
+    });
+}
+</script>
+
+</body>
+</html>
